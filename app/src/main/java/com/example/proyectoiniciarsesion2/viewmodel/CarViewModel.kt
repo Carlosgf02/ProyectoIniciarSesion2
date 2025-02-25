@@ -46,7 +46,8 @@ class CarViewModel : ViewModel() {
                         "año" to marca.año,
                         "pais" to marca.pais,
                         "userId" to currentUser.uid,
-                        "createdAt" to System.currentTimeMillis()
+                        "createdAt" to System.currentTimeMillis(),
+                        "updatedAt" to null
                     )
 
                     db.collection("marcas")
@@ -99,7 +100,7 @@ class CarViewModel : ViewModel() {
 
                 db.collection("marcas")
                     .document(marca.id)
-                    .set(marcaData)
+                    .update(marcaData as Map<String, Any>)
                     .await()
 
                 loadMarcas()

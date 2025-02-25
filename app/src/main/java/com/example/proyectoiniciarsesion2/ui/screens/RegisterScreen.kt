@@ -16,7 +16,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.proyectoiniciarsesion2.viewmodel.AuthViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
     var email = remember { mutableStateOf("") }
@@ -45,89 +50,102 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Registrarse", style = MaterialTheme.typography.headlineLarge)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Registro") },
+                navigationIcon = {
+                    // Solo mostrar el botón si NO estamos en modo anónimo
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (errorMessage.value.isNotEmpty()) {
-            Text(
-                text = errorMessage.value,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(vertical = 8.dp)
+                }
             )
         }
-
-        TextField(
-            value = email.value,
-            onValueChange = { email.value = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = confirmPassword.value,
-            onValueChange = { confirmPassword.value = it },
-            label = { Text("Confirmar Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (password.value != confirmPassword.value) {
-                    errorMessage.value = "Las contraseñas no coinciden"
-                    return@Button
-                }
-                if (password.value.length < 6) {
-                    errorMessage.value = "La contraseña debe tener al menos 6 caracteres"
-                    return@Button
-                }
-                authViewModel.signUp(email.value, password.value)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+            Text(text = "Registrarse", style = MaterialTheme.typography.headlineLarge)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (errorMessage.value.isNotEmpty()) {
+                Text(
+                    text = errorMessage.value,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
-            } else {
-                Text("Registrarse")
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = email.value,
+                onValueChange = { email.value = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        TextButton(
-            onClick = { 
-                navController.navigate("login") {
-                    popUpTo("register") { inclusive = true }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = password.value,
+                onValueChange = { password.value = it },
+                label = { Text("Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = confirmPassword.value,
+                onValueChange = { confirmPassword.value = it },
+                label = { Text("Confirmar Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (password.value != confirmPassword.value) {
+                        errorMessage.value = "Las contraseñas no coinciden"
+                        return@Button
+                    }
+                    if (password.value.length < 6) {
+                        errorMessage.value = "La contraseña debe tener al menos 6 caracteres"
+                        return@Button
+                    }
+                    authViewModel.signUp(email.value, password.value)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Registrarse")
                 }
             }
-        ) {
-            Text("¿Ya tienes cuenta? Inicia sesión")
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { 
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                }
+            ) {
+                Text("¿Ya tienes cuenta? Inicia sesión")
+            }
         }
     }
 }

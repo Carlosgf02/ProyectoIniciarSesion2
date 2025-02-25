@@ -5,5 +5,8 @@ data class Modelo(
     val nombre: String = "",
     val año: Int = 0,
     val precio: Float = 0f,
-    val userId: String = ""
+    val userId: String = "",
+    val marcaId: String = "",
+    val createdAt: Long = 0,
+    val updatedAt: Long? = null
 )

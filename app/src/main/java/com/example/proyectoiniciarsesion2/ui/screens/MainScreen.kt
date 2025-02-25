@@ -27,10 +27,20 @@ fun MainScreen(
     val user by authViewModel.user.collectAsState()
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    
+    // Mantener track de si estamos haciendo logout manualmente
+    var isManualSignOut by remember { mutableStateOf(false) }
 
     LaunchedEffect(user) {
-        user?.let { currentUser ->
-            carViewModel.initializeData(currentUser.uid)
+        val currentUser = user
+        if (currentUser == null && !isManualSignOut) {
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
+            }
+        } else if (currentUser != null) {
+            currentUser.uid?.let { uid ->
+                carViewModel.initializeData(uid)
+            }
         }
     }
 
@@ -61,6 +71,7 @@ fun MainScreen(
                 actions = {
                     IconButton(
                         onClick = {
+                            isManualSignOut = true  // Indicar que es un logout manual
                             carViewModel.clearData()
                             authViewModel.signOut()
                             navController.navigate("login") {
@@ -93,60 +104,55 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (user == null) {
+                if (user?.isAnonymous == true) {
+                    Text(
+                        text = "Modo invitado: Funcionalidad limitada",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
                     Button(
                         onClick = { 
-                            authViewModel.signInAnonymously()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Acceder como Invitado")
-                    }
-                    Button(
-                        onClick = { 
-                            navController.navigate("login")
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Iniciar Sesión")
-                    }
-                    TextButton(
-                        onClick = { 
+                            isManualSignOut = true  // Indicar que es un logout manual
+                            carViewModel.clearData()
+                            authViewModel.signOut()
                             navController.navigate("register") {
-                                popUpTo("main") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("¿No tienes cuenta? Regístrate")
+                        Text("Registrarse como Usuario")
+                    }
+                    
+                    // Botones limitados para usuarios anónimos
+                    Button(
+                        onClick = { navController.navigate("marcas_screen") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Ver Marcas (Vista Limitada)")
+                    }
+
+                    Button(
+                        onClick = { navController.navigate("car_api") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Ver Datos API de Autos")
                     }
                 } else {
-                    // Interfaz según el tipo de usuario
-                    if (user?.isAnonymous == true) {
-                        Text("Modo invitado: Funcionalidad limitada")
-                        Button(
-                            onClick = { 
-                                navController.navigate("login") {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Iniciar Sesión para Acceder")
-                        }
-                    } else {
-                        Button(
-                            onClick = { navController.navigate("marcas_screen") },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Gestionar Marcas")
-                        }
-                        Button(
-                            onClick = { navController.navigate("modelos_screen") },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Gestionar Modelos")
-                        }
+                    // Interfaz completa para usuarios registrados
+                    Button(
+                        onClick = { navController.navigate("marcas_screen") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Gestionar Marcas")
+                    }
+                    Button(
+                        onClick = { navController.navigate("modelos_screen") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Gestionar Modelos")
                     }
                 }
             }

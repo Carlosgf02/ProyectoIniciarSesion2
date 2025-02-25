@@ -15,6 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.proyectoiniciarsesion2.ui.screens.MarcasScreen
 import com.example.proyectoiniciarsesion2.ui.screens.ModelosScreen
 import com.example.proyectoiniciarsesion2.ui.screens.ForgotPasswordScreen
+import com.example.proyectoiniciarsesion2.ui.screens.CarApiScreen
+import com.example.proyectoiniciarsesion2.viewmodel.CarApiViewModel
 
 @Composable
 fun NavGraph(
@@ -22,6 +24,8 @@ fun NavGraph(
     authViewModel: AuthViewModel,
     carViewModel: CarViewModel = viewModel()
 ) {
+    val carApiViewModel: CarApiViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = "login"
@@ -53,6 +57,12 @@ fun NavGraph(
         }
         composable("forgot_password") {
             ForgotPasswordScreen(navController = navController, authViewModel = authViewModel)
+        }
+        composable("car_api") {
+            CarApiScreen(
+                navController = navController,
+                viewModel = carApiViewModel
+            )
         }
     }
 }

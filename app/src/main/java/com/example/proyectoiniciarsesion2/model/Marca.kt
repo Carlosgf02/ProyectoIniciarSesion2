@@ -5,5 +5,7 @@ data class Marca(
     val nombre: String = "",
     val año: Int = 0,
     val pais: String = "",
-    val userId: String = ""
+    val userId: String = "",
+    val createdAt: Long = 0,
+    val updatedAt: Long? = null
 )
