@@ -145,20 +145,13 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Enlace para restablecer contraseña
-        TextButton(onClick = {
-            if (email.value.isNotEmpty()) {
-                authViewModel.forgotPassword(email.value)
-            } else {
-                authViewModel.updateError("Por favor, ingresa un correo electrónico.")
-            }
-        }) {
-            Text(
-                text = "¿Has olvidado tu contraseña?",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            )
+        TextButton(
+            onClick = {
+                navController.navigate("forgot_password")
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("¿Olvidaste tu contraseña?")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -221,14 +214,7 @@ fun LoginScreen(
         }
 
         // Añadir este botón después del botón de inicio de sesión
-        TextButton(
-            onClick = { 
-                navController.navigate("forgot_password")
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("¿Olvidaste tu contraseña?")
-        }
+
     }
 
     Column (
