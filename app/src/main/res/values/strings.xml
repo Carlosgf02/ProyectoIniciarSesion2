@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ProyectoIniciarSesion2</string>
+    <string name="default_web_client_id">113422539659-v7dl5mef8nkv46at713vub9bl103e4o7.apps.googleusercontent.com</string>
+    <string name="error_invalid_email">Email inválido</string>
+    <string name="error_password_length">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_passwords_not_match">Las contraseñas no coinciden</string>
+</resources>
