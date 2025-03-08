@@ -37,10 +37,8 @@ fun MainScreen(
             navController.navigate("login") {
                 popUpTo(0) { inclusive = true }
             }
-        } else if (currentUser != null) {
-            currentUser.uid?.let { uid ->
-                carViewModel.initializeData(uid)
-            }
+        } else currentUser?.uid?.let { uid ->
+            carViewModel.initializeData(uid)
         }
     }
 
@@ -135,10 +133,11 @@ fun MainScreen(
                     }
 
                     Button(
-                        onClick = { navController.navigate("car_api") },
-                        modifier = Modifier.fillMaxWidth()
+                        onClick = { navController.navigate("marvel") },
+                        modifier = Modifier
+                            .fillMaxWidth()
                     ) {
-                        Text("Ver Datos API de Autos")
+                        Text("Ver Personajes Marvel")
                     }
                 } else {
                     // Interfaz completa para usuarios registrados

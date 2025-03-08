@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.proyectoiniciarsesion2.navigation.AppNavigation
 import com.example.proyectoiniciarsesion2.ui.theme.ProyectoIniciarSesion2Theme
 import com.example.proyectoiniciarsesion2.viewmodel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel

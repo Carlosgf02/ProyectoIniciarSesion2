@@ -7,16 +7,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.proyectoiniciarsesion2.model.Modelo
+import com.example.proyectoiniciarsesion2.model.Marca
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditModelDialog(
     modelo: Modelo?,
+    marcas: List<Marca>,
     onDismiss: () -> Unit,
     onSave: (Modelo) -> Unit
 ) {
     var nombre by remember { mutableStateOf(modelo?.nombre ?: "") }
     var año by remember { mutableStateOf(modelo?.año?.toString() ?: "") }
     var precio by remember { mutableStateOf(modelo?.precio?.toString() ?: "") }
+    var selectedMarcaId by remember { mutableStateOf(modelo?.marcaId ?: "") }
+    var expanded by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -43,6 +48,39 @@ fun AddEditModelDialog(
                     label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Dropdown para seleccionar marca
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = marcas.find { it.id == selectedMarcaId }?.nombre ?: "Selecciona una marca",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Marca") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        marcas.forEach { marca ->
+                            DropdownMenuItem(
+                                text = { Text(marca.nombre) },
+                                onClick = {
+                                    selectedMarcaId = marca.id
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
@@ -73,17 +111,21 @@ fun AddEditModelDialog(
                     }
                     Button(
                         onClick = {
-                            val newModelo = Modelo(
-                                id = modelo?.id ?: "",
-                                nombre = nombre,
-                                año = año.toIntOrNull() ?: 0,
-                                precio = precio.toFloatOrNull() ?: 0f,
-                                userId = modelo?.userId ?: ""
-                            )
-                            onSave(newModelo)
-                            onDismiss()
+                            if (selectedMarcaId.isNotEmpty()) {
+                                val newModelo = Modelo(
+                                    id = modelo?.id ?: "",
+                                    nombre = nombre,
+                                    año = año.toIntOrNull() ?: 0,
+                                    precio = precio.toFloatOrNull() ?: 0f,
+                                    userId = modelo?.userId ?: "",
+                                    marcaId = selectedMarcaId
+                                )
+                                onSave(newModelo)
+                                onDismiss()
+                            }
                         },
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        enabled = selectedMarcaId.isNotEmpty()
                     ) {
                         Text("Guardar")
                     }

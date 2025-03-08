@@ -25,11 +25,13 @@ fun ModelosScreen(
     viewModel: CarViewModel
 ) {
     val modelos by viewModel.modelos.collectAsState()
+    val marcas by viewModel.marcas.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     var selectedModelo by remember { mutableStateOf<Modelo?>(null) }
 
     LaunchedEffect(Unit) {
+        viewModel.loadMarcas()  // Cargar marcas al entrar a la pantalla
         viewModel.loadModelos()  // Cargar modelos al entrar a la pantalla
     }
 
@@ -60,42 +62,47 @@ fun ModelosScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
         ) {
-            items(modelos) { modelo ->
-                ModelItem(
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(modelos) { modelo ->
+                    val marca = marcas.find { it.id == modelo.marcaId }
+                    ModelItem(
+                        modelo = modelo,
+                        marca = marca,
+                        onEdit = { selectedModelo = modelo },
+                        onDelete = { viewModel.deleteModelo(modelo.id) }
+                    )
+                }
+            }
+
+            selectedModelo?.let { modelo ->
+                AddEditModelDialog(
                     modelo = modelo,
-                    onEdit = { selectedModelo = modelo },
-                    onDelete = { viewModel.deleteModelo(modelo.id) }
+                    marcas = marcas,
+                    onDismiss = { selectedModelo = null },
+                    onSave = { newModelo ->
+                        if (modelo.id.isEmpty()) {
+                            viewModel.addModelo(newModelo)
+                        } else {
+                            viewModel.updateModelo(newModelo)
+                        }
+                        selectedModelo = null
+                    }
                 )
             }
-        }
 
-        selectedModelo?.let { modelo ->
-            AddEditModelDialog(
-                modelo = modelo,
-                onDismiss = { selectedModelo = null },
-                onSave = { newModelo ->
-                    if (modelo.id.isEmpty()) {
-                        viewModel.addModelo(newModelo)
-                    } else {
-                        viewModel.updateModelo(newModelo)
-                    }
-                    selectedModelo = null
-                }
-            )
-        }
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
     }

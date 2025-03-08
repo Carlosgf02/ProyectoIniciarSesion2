@@ -10,10 +10,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.proyectoiniciarsesion2.model.Modelo
+import com.example.proyectoiniciarsesion2.model.Marca
 
 @Composable
 fun ModelItem(
     modelo: Modelo,
+    marca: Marca? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -34,6 +36,12 @@ fun ModelItem(
                     text = modelo.nombre,
                     style = MaterialTheme.typography.titleMedium
                 )
+                marca?.let {
+                    Text(
+                        text = "Marca: ${it.nombre}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Text(
                     text = "Año: ${modelo.año}",
                     style = MaterialTheme.typography.bodyMedium

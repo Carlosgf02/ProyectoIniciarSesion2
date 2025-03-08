@@ -81,7 +81,6 @@ fun AddEditMarcaDialog(
                                 userId = marca?.userId ?: ""
                             )
                             onSave(newMarca)
-                            onDismiss()
                         },
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
