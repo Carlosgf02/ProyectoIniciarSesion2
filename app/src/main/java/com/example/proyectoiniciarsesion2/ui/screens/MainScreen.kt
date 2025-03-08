@@ -3,14 +3,17 @@ package com.example.proyectoiniciarsesion2.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.proyectoiniciarsesion2.viewmodel.AuthViewModel
 import com.example.proyectoiniciarsesion2.viewmodel.CarViewModel
@@ -27,8 +30,6 @@ fun MainScreen(
     val user by authViewModel.user.collectAsState()
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    
-    // Mantener track de si estamos haciendo logout manualmente
     var isManualSignOut by remember { mutableStateOf(false) }
 
     LaunchedEffect(user) {
@@ -52,24 +53,43 @@ fun MainScreen(
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
-            title = { Text("Error") },
+            title = { 
+                Text(
+                    "Error",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            },
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = { showErrorDialog = false }) {
                     Text("Aceptar")
                 }
-            }
+            },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (user?.isAnonymous == true) "Modo Invitado" else "Gestión de Vehículos") },
+            LargeTopAppBar(
+                title = { 
+                    Text(
+                        if (user?.isAnonymous == true) "Modo Invitado" else "Gestión de Vehículos",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+                },
                 actions = {
                     IconButton(
                         onClick = {
-                            isManualSignOut = true  // Indicar que es un logout manual
+                            isManualSignOut = true
                             carViewModel.clearData()
                             authViewModel.signOut()
                             navController.navigate("login") {
@@ -79,10 +99,14 @@ fun MainScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Cerrar Sesión"
+                            contentDescription = "Cerrar Sesión",
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     ) { padding ->
@@ -91,67 +115,214 @@ fun MainScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 6.dp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Cargando...",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                Spacer(modifier = Modifier.height(8.dp))
+
                 if (user?.isAnonymous == true) {
-                    Text(
-                        text = "Modo invitado: Funcionalidad limitada",
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Modo invitado: Funcionalidad limitada",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                     
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Button(
                         onClick = { 
-                            isManualSignOut = true  // Indicar que es un logout manual
+                            isManualSignOut = true
                             carViewModel.clearData()
                             authViewModel.signOut()
                             navController.navigate("register") {
                                 popUpTo(0) { inclusive = true }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Registrarse como Usuario")
-                    }
-                    
-                    // Botones limitados para usuarios anónimos
-                    Button(
-                        onClick = { navController.navigate("marcas_screen") },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Ver Marcas (Vista Limitada)")
-                    }
-
-                    Button(
-                        onClick = { navController.navigate("marvel") },
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Text("Ver Personajes Marvel")
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.PersonAdd, contentDescription = null)
+                            Text(
+                                "Registrarse como Usuario",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
-                } else {
-                    // Interfaz completa para usuarios registrados
-                    Button(
-                        onClick = { navController.navigate("marcas_screen") },
-                        modifier = Modifier.fillMaxWidth()
+                }
+
+                // Tarjetas para las opciones principales
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Gestionar Marcas")
+                        Text(
+                            text = "Gestión de Vehículos",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Button(
+                            onClick = { navController.navigate("marcas_screen") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.DirectionsCar, contentDescription = null)
+                                Text(
+                                    if (user?.isAnonymous == true) "Ver Marcas (Vista Limitada)" else "Gestionar Marcas",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
+
+                        if (user?.isAnonymous != true) {
+                            Button(
+                                onClick = { navController.navigate("modelos_screen") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.Settings, contentDescription = null)
+                                    Text(
+                                        "Gestionar Modelos",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
+                        }
                     }
-                    Button(
-                        onClick = { navController.navigate("modelos_screen") },
-                        modifier = Modifier.fillMaxWidth()
+                }
+
+                // Tarjeta para características adicionales (solo en modo anónimo)
+                if (user?.isAnonymous == true) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Text("Gestionar Modelos")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Características Adicionales",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Button(
+                                onClick = { navController.navigate("marvel") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.Favorite, contentDescription = null)
+                                    Text(
+                                        "Ver Personajes Marvel",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

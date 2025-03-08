@@ -10,22 +10,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-// Recomendación: Usar un sealed class para el estado
-sealed class AuthState {
-    object Loading : AuthState()
-    data class Error(val message: String) : AuthState()
-    data class Success(val user: FirebaseUser?) : AuthState()
-    object Idle : AuthState()
-}
-
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     // Estado del usuario actual
-    private val _user = MutableStateFlow<FirebaseUser?>(auth.currentUser)
+    private val _user = MutableStateFlow(auth.currentUser)
     val user: StateFlow<FirebaseUser?> = _user
 
-    // Estado de carga (isLoading)
+    // Estado de carga
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -33,32 +25,11 @@ class AuthViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
-    val authState: StateFlow<AuthState> = _authState
-
-    private val _isAuthenticated = MutableStateFlow(false)
-    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated
-
-    init {
-        checkAuthState()
-    }
-
-    private fun checkAuthState() {
-        _isAuthenticated.value = auth.currentUser != null
-    }
-
     /**
      * Función para actualizar el estado del error.
      */
     fun updateError(message: String?) {
         _error.value = message
-    }
-
-    /**
-     * Verifica si el usuario está autenticado.
-     */
-    fun isSignedIn(): Boolean {
-        return auth.currentUser != null
     }
 
     /**
@@ -74,19 +45,16 @@ class AuthViewModel : ViewModel() {
             return
         }
         viewModelScope.launch {
-            _isLoading.emit(true)
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    viewModelScope.launch {
-                        _isLoading.emit(false)
-                        if (task.isSuccessful) {
-                            _user.emit(auth.currentUser)
-                            updateError(null) // Limpia cualquier mensaje de error anterior
-                        } else {
-                            updateError(task.exception?.localizedMessage ?: "Error desconocido al iniciar sesión")
-                        }
-                    }
-                }
+            _isLoading.value = true
+            try {
+                auth.signInWithEmailAndPassword(email, password).await()
+                _user.value = auth.currentUser
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage ?: "Error desconocido al iniciar sesión"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
@@ -99,21 +67,14 @@ class AuthViewModel : ViewModel() {
      */
     fun signUp(email: String, password: String) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
-                _isLoading.value = true
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            _user.value = auth.currentUser
-                            _isAuthenticated.value = true
-                            _error.value = null
-                        } else {
-                            _error.value = task.exception?.localizedMessage ?: "Error desconocido al registrarse"
-                        }
-                        _isLoading.value = false
-                    }
+                auth.createUserWithEmailAndPassword(email, password).await()
+                _user.value = auth.currentUser
+                _error.value = null
             } catch (e: Exception) {
-                _error.value = e.message
+                _error.value = e.localizedMessage ?: "Error desconocido al registrarse"
+            } finally {
                 _isLoading.value = false
             }
         }
@@ -122,12 +83,10 @@ class AuthViewModel : ViewModel() {
     /**
      * Cierra sesión.
      */
-    fun logout() {
-        viewModelScope.launch {
-            auth.signOut()
-            _user.emit(null)
-            updateError(null) // Limpia cualquier mensaje de error anterior
-        }
+    fun signOut() {
+        auth.signOut()
+        _user.value = null
+        _error.value = null
     }
 
     /**
@@ -135,24 +94,19 @@ class AuthViewModel : ViewModel() {
      */
     fun signInAnonymously() {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
-                _isLoading.value = true
-                auth.signInAnonymously()
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            _user.value = auth.currentUser
-                        } else {
-                            val errorMessage = when (task.exception?.message) {
-                                "This operation is restricted to administrators only." -> 
-                                    "El inicio de sesión anónimo no está habilitado. Contacta al administrador."
-                                else -> task.exception?.message ?: "Error desconocido"
-                            }
-                            _error.value = errorMessage
-                        }
-                        _isLoading.value = false
-                    }
+                auth.signInAnonymously().await()
+                _user.value = auth.currentUser
+                _error.value = null
             } catch (e: Exception) {
-                _error.value = e.message ?: "Error desconocido"
+                val errorMessage = when (e.message) {
+                    "This operation is restricted to administrators only." -> 
+                        "El inicio de sesión anónimo no está habilitado. Contacta al administrador."
+                    else -> e.message ?: "Error desconocido"
+                }
+                _error.value = errorMessage
+            } finally {
                 _isLoading.value = false
             }
         }
@@ -163,22 +117,17 @@ class AuthViewModel : ViewModel() {
      */
     fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
-            _isLoading.emit(true)
-            // Crear credenciales de Google
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            // Iniciar sesión con Firebase
-            auth.signInWithCredential(credential)
-                .addOnCompleteListener { task ->
-                    viewModelScope.launch {
-                        _isLoading.emit(false)
-                        if (task.isSuccessful) {
-                            _user.emit(auth.currentUser)
-                            updateError(null) // Limpia cualquier mensaje de error anterior
-                        } else {
-                            updateError(task.exception?.localizedMessage ?: "Error desconocido al iniciar sesión con Google")
-                        }
-                    }
-                }
+            _isLoading.value = true
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(credential).await()
+                _user.value = auth.currentUser
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage ?: "Error desconocido al iniciar sesión con Google"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
@@ -187,64 +136,12 @@ class AuthViewModel : ViewModel() {
      */
     fun forgotPassword(email: String) {
         viewModelScope.launch {
-            _isLoading.emit(true)
-            auth.sendPasswordResetEmail(email)
-                .addOnCompleteListener { task ->
-                    viewModelScope.launch {
-                        _isLoading.emit(false)
-                        if (task.isSuccessful) {
-                            updateError("Se ha enviado un correo de restablecimiento de contraseña a $email")
-                        } else {
-                            updateError(task.exception?.localizedMessage ?: "Error desconocido al enviar el correo de restablecimiento")
-                        }
-                    }
-                }
-        }
-    }
-
-    fun isUserLoggedIn(): Boolean {
-        return auth.currentUser != null
-    }
-
-    fun signIn(email: String, password: String) {
-        viewModelScope.launch {
+            _isLoading.value = true
             try {
-                _isLoading.value = true
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            _user.value = auth.currentUser
-                            _isAuthenticated.value = true
-                            _error.value = null
-                        } else {
-                            _error.value = task.exception?.message ?: "Error desconocido"
-                        }
-                        _isLoading.value = false
-                    }
-            } catch (e: Exception) {
-                _error.value = e.message
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun signOut() {
-        auth.signOut()
-        _user.value = null
-        _isAuthenticated.value = false
-    }
-
-    fun resetPassword(email: String, onComplete: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                _error.value = null
-                
                 auth.sendPasswordResetEmail(email).await()
-                onComplete(true)
+                _error.value = "Se ha enviado un correo de restablecimiento de contraseña a $email"
             } catch (e: Exception) {
-                _error.value = e.message ?: "Error al enviar el correo de recuperación"
-                onComplete(false)
+                _error.value = e.localizedMessage ?: "Error desconocido al enviar el correo de restablecimiento"
             } finally {
                 _isLoading.value = false
             }

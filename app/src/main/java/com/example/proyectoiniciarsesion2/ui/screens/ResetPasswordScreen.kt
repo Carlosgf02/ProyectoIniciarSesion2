@@ -1,7 +1,6 @@
 package com.example.proyectoiniciarsesion2.ui.screens
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,11 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.proyectoiniciarsesion2.viewmodel.AuthViewModel
 
 @Composable
-fun ResetPasswordScreen(navController: NavController, authViewModel: AuthViewModel) {
+fun ResetPasswordScreen(authViewModel: AuthViewModel) {
     var email = remember { mutableStateOf("") }
     var errorMessage = remember { mutableStateOf("") }
 
@@ -60,5 +58,5 @@ fun ResetPasswordScreen(navController: NavController, authViewModel: AuthViewMod
 @Preview(showBackground = true)
 @Composable
 fun ResetPasswordScreenPreview() {
-    ResetPasswordScreen(navController = rememberNavController(), authViewModel = AuthViewModel())
+    ResetPasswordScreen(authViewModel = AuthViewModel())
 }

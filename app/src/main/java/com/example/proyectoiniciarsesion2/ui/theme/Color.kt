@@ -2,10 +2,35 @@ package com.example.proyectoiniciarsesion2.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Paleta principal - Inspirada en el tema de Marvel
+val PrimaryRed = Color(0xFFE23636)
+val PrimaryDark = Color(0xFF1F1F1F)
+val Secondary = Color(0xFF504CFF)
+val Accent = Color(0xFFFFD700)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Paleta de fondo
+val Background = Color(0xFFF8F8F8)
+val Surface = Color(0xFFFFFFFF)
+val SurfaceVariant = Color(0xFFF0F0F0)
+val CardBackground = Color(0xFFFFFFFF)
+
+// Gradientes y efectos
+val GradientStart = Color(0xFFE23636)
+val GradientEnd = Color(0xFF504CFF)
+val Overlay = Color(0x80000000)
+
+// Paleta de texto
+val TextPrimary = Color(0xFF1F1F1F)
+val TextSecondary = Color(0xFF666666)
+val TextHint = Color(0xFF999999)
+val TextOnPrimary = Color(0xFFFFFFFF)
+
+// Paleta de estado
+val Success = Color(0xFF00C853)
+val Error = Color(0xFFFF3D00)
+val Warning = Color(0xFFFFD600)
+
+// Colores adicionales para UI
+val CardBorder = Color(0xFFE0E0E0)
+val DividerColor = Color(0xFFEEEEEE)
+val ShimmerColor = Color(0xFFE0E0E0)
